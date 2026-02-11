@@ -42,6 +42,17 @@ export default function App() {
   const [currentHint, setCurrentHint] = useState(null);
   const [shuffleKey, setShuffleKey] = useState(0);
   const [showMenu, setShowMenu] = useState(false);
+  const [firstVisit, setFirstVisit] = useState(true);
+
+  const enterGame = () => {
+    if (playerName.trim()) {
+      setScreen("game");
+      if (firstVisit) {
+        setShowHelp(true);
+        setFirstVisit(false);
+      }
+    }
+  };
 
   const puzzle = PUZZLE;
 
@@ -128,8 +139,8 @@ export default function App() {
           <p className="wbrand">עתודה · מרכז בית יעקב</p>
           <div className="wline" />
           <p className="wdesc">מצאי את הקשר הנסתר בין המילים<br />5 קבוצות · 15 מילים · קשר אחד</p>
-          <input type="text" placeholder="איך קוראים לך?" value={playerName} onChange={(e) => setPlayerName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && playerName.trim() && setScreen("game")} className="winput" dir="rtl" />
-          <button onClick={() => playerName.trim() && setScreen("game")} disabled={!playerName.trim()} className="wbtn" style={{ opacity: playerName.trim() ? 1 : 0.4 }}>בואי נשחק ✨</button>
+          <input type="text" placeholder="איך קוראים לך?" value={playerName} onChange={(e) => setPlayerName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && enterGame()} className="winput" dir="rtl" />
+          <button onClick={enterGame} disabled={!playerName.trim()} className="wbtn" style={{ opacity: playerName.trim() ? 1 : 0.4 }}>בואי נשחק ✨</button>
           <button onClick={() => setShowHelp(true)} className="wlnk">איך משחקים?</button>
         </div>
         {showHelp && <Help onClose={() => setShowHelp(false)} />}
@@ -282,13 +293,47 @@ export default function App() {
 function Help({ onClose }) {
   return (
     <div className="overlay" onClick={onClose}>
-      <div className="modal fade-in" onClick={(e) => e.stopPropagation()}>
-        <h2 className="m-t">איך משחקים? 🎯</h2>
+      <div className="help-modal fade-in" onClick={(e) => e.stopPropagation()}>
+        <h2 className="help-title">איך משחקים?</h2>
+
         <div className="help-body">
-          <p>לפנייך <strong>15 מילים</strong> המחולקות ל-<strong>5 קבוצות</strong> של 3 מילים עם קשר משותף.</p>
-          <p style={{ marginTop: 10 }}><strong>כללים:</strong><br />• בחרי 3 מילים ולחצי "בדיקה"<br />• ניחוש נכון — הקבוצה תתגלה<br />• ניחוש שגוי — תפסידי ניחוש<br />• צדקת ב-2 מתוך 3 — "כמעט!"<br />• 6 ניחושים · 2 רמזים</p>
+          <p>בלוח שלפנייך ישנן <strong>15 מילים</strong> המורכבות מ-<strong>5 קבוצות</strong> של 3 מילים שיש ביניהן מכנה משותף.</p>
+          <p>עלייך לקבץ אותן ל-5 קבוצות של 3 מילים כל אחת.</p>
+
+          <h3 className="help-subtitle">כללי המשחק:</h3>
+          <ul className="help-list">
+            <li>בחרי 3 מילים שלדעתך שייכות לאותה קבוצה</li>
+            <li>לחצי על כפתור <strong>"בדיקה"</strong> כדי לבדוק אם צדקת</li>
+            <li>אם הניחוש נכון, הקטגוריה תופיע מעל הלוח</li>
+            <li>אם צדקת ב-2 מתוך 3 המילים, תקבלי הודעה <strong>"כמעט..."</strong>, כלומר את בכיוון הנכון</li>
+          </ul>
+
+          <p className="help-warning">מספר הניחושים מוגבל. נסי למצוא את כל הקטגוריות לפני שהניחושים ייגמרו!</p>
+
+          <h3 className="help-subtitle">קטגוריות לדוגמא:</h3>
+          <ul className="help-list">
+            <li><strong>עשרת המכות:</strong> דם, חושך, דבר, ברד</li>
+            <li><strong>_ ים:</strong> חוף, יורד, בגד, שודד</li>
+          </ul>
+
+          <p className="help-note">הנושא המשותף ספציפי יותר מ-"שמות", "פעלים" או "מילים בעלות 3 אותיות".<br/>שימי לב: המילים בלוח יכולות להיכתב הן בכתיב מלא והן בכתיב חסר.</p>
+
+          <h3 className="help-subtitle">כל קבוצה מקושרת לצבע, שייחשף בעת פתירתה:</h3>
+          <div className="help-colors">
+            <div className="help-color-row">
+              <span className="help-color-bar" style={{ background: '#58B8A0' }}>קל</span>
+              <span className="help-color-bar" style={{ background: '#7B8FD4' }}>בינוני</span>
+            </div>
+            <div className="help-color-row">
+              <span className="help-color-bar" style={{ background: '#E88B8B' }}>קשה</span>
+              <span className="help-color-bar" style={{ background: '#F0C94B' }}>מאתגר</span>
+            </div>
+          </div>
         </div>
-        <button onClick={onClose} className="m-btn" style={{ marginTop: 16 }}>הבנתי! 👍</button>
+
+        <div className="help-actions">
+          <button onClick={onClose} className="help-close-btn">סגירה</button>
+        </div>
       </div>
     </div>
   );
@@ -825,7 +870,110 @@ button, input, textarea, select {
 }
 .modal-promo-btn:hover { filter: brightness(1.1); }
 
-.help-body { text-align: right; line-height: 2; font-size: 13px; color: #555; }
+.help-body { text-align: right; line-height: 1.9; font-size: 14px; color: #444; }
+
+/* ══════════════════════════════════
+   HELP MODAL (rich instructions)
+   ══════════════════════════════════ */
+.help-modal {
+  background: #fff;
+  padding: 0;
+  max-width: 480px;
+  width: 95%;
+  max-height: 88vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+  direction: rtl;
+}
+.help-title {
+  font-size: 22px;
+  font-weight: 900;
+  color: #1a1360;
+  text-align: center;
+  padding: 24px 24px 16px;
+  border-bottom: 1px solid #f0edf4;
+}
+.help-modal .help-body {
+  padding: 20px 24px;
+  text-align: right;
+  line-height: 1.9;
+  font-size: 14px;
+  color: #444;
+}
+.help-modal .help-body p {
+  margin-bottom: 10px;
+}
+.help-subtitle {
+  font-size: 15px;
+  font-weight: 800;
+  color: #1a1360;
+  margin: 16px 0 8px;
+}
+.help-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px;
+}
+.help-list li {
+  position: relative;
+  padding-right: 18px;
+  margin-bottom: 6px;
+  line-height: 1.7;
+}
+.help-list li::before {
+  content: '•';
+  position: absolute;
+  right: 0;
+  color: #58B8A0;
+  font-weight: 700;
+}
+.help-warning {
+  color: #d94040;
+  font-weight: 600;
+  margin: 12px 0;
+}
+.help-note {
+  font-size: 13px;
+  color: #888;
+  margin: 12px 0;
+  line-height: 1.7;
+}
+.help-colors {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 12px 0 4px;
+}
+.help-color-row {
+  display: flex;
+  gap: 6px;
+}
+.help-color-bar {
+  flex: 1;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1a1a2e;
+  text-align: center;
+}
+.help-actions {
+  padding: 16px 24px;
+  border-top: 1px solid #f0edf4;
+  display: flex;
+  gap: 10px;
+}
+.help-close-btn {
+  flex: 0 0 auto;
+  padding: 10px 28px;
+  background: #58B8A0;
+  color: #fff;
+  border: none;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.help-close-btn:hover { filter: brightness(1.08); }
 
 /* ══════════════════════════════════
    ANIMATIONS
